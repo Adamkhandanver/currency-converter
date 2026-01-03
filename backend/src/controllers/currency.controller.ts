@@ -1,15 +1,19 @@
 import { Controller, Get, Query, HttpStatus, HttpException } from '@nestjs/common';
 import { CurrencyService } from '../services/currency.service';
 
-@Controller('currency')
+@Controller()
 export class CurrencyController {
   constructor(private readonly currencyService: CurrencyService) {}
 
   @Get('status')
   async getStatus() {
+    console.log('CurrencyController: getStatus called');
     try {
-      return await this.currencyService.getStatus();
+      const result = await this.currencyService.getStatus();
+      console.log('CurrencyController: getStatus success');
+      return result;
     } catch (error) {
+      console.error('CurrencyController: getStatus error:', error.message);
       throw new HttpException(
         'Failed to get API status',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -19,10 +23,14 @@ export class CurrencyController {
 
   @Get('currencies')
   async getCurrencies(@Query('currencies') currencies?: string) {
+    console.log('CurrencyController: getCurrencies called with', currencies);
     try {
       const currenciesArray = currencies ? currencies.split(',') : undefined;
-      return await this.currencyService.getCurrencies(currenciesArray);
+      const result = await this.currencyService.getCurrencies(currenciesArray);
+      console.log('CurrencyController: getCurrencies success');
+      return result;
     } catch (error) {
+      console.error('CurrencyController: getCurrencies error:', error.message);
       throw new HttpException(
         'Failed to get currencies',
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -80,6 +88,7 @@ export class CurrencyController {
     @Query('amount') amount?: string,
     @Query('date') date?: string,
   ) {
+    console.log('CurrencyController: convert called with', { from, to, amount, date });
     try {
       if (!from || !to) {
         throw new HttpException('From and to parameters are required', HttpStatus.BAD_REQUEST);
@@ -90,8 +99,11 @@ export class CurrencyController {
         throw new HttpException('Amount must be a positive number', HttpStatus.BAD_REQUEST);
       }
 
-      return await this.currencyService.convertCurrency(from, to, amountNumber, date);
+      const result = await this.currencyService.convertCurrency(from, to, amountNumber, date);
+      console.log('CurrencyController: convert success', result);
+      return result;
     } catch (error) {
+      console.error('CurrencyController: convert error:', error.message);
       if (error instanceof HttpException) throw error;
       throw new HttpException(
         'Failed to convert currency',

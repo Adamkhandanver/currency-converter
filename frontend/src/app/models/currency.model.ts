@@ -1,6 +1,7 @@
 export interface Currency {
   code: string;
   name: string;
+  symbol: string;
 }
 
 export interface ExchangeRate {
@@ -32,11 +33,17 @@ export interface ConversionRecord {
 }
 
 export interface ConvertResponse {
-  from: string;
-  to: string;
-  amount: number;
-  convertedAmount: number;
-  rate: number;
+  success: boolean;
+  query: {
+    from: string;
+    to: string;
+    amount: number;
+    date: string;
+  };
+  info: {
+    rate: number;
+    timestamp: string;
+  };
+  result: number;
   date: string;
-  timestamp: string;
 }

@@ -1,8 +1,5 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import serverlessExpress from '@vendia/serverless-express';
-
-let cachedServer;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,23 +11,8 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
-  if (process.env.NODE_ENV === 'development') {
-    await app.listen(3001);
-    console.log('Server is running on http://localhost:3001');
-  } else {
-    cachedServer = serverlessExpress({ app: app.getHttpAdapter().getInstance() });
-  }
-
-  return cachedServer;
+  await app.listen(3002);
+  console.log('NestJS backend server is running on http://localhost:3002');
 }
 
-if (process.env.NODE_ENV === 'development') {
-  (async () => {
-    await bootstrap();
-  })();
-}
-
-export const handler = async (event, context) => {
-  const server = await bootstrap();
-  return server(event, context);
-};
+bootstrap();

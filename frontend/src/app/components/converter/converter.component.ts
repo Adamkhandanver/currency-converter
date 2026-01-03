@@ -26,9 +26,9 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatChip } from '@angular/material/chips';
 import { MatSpinner } from '@angular/material/progress-spinner';
 
-import { CurrencyService } from '../../services/currency.service';
 import { StorageService } from '../../services/storage.service';
-import { Currency, ConversionRecord } from '../../models/currency.model';
+import { CurrencyService } from '../../services/currency.service';
+import { Currency, ConversionRecord, CurrenciesResponse, ConvertResponse } from '../../models/currency.model';
 
 import { InputFormatterDirective } from '../../directives/input-formatter.directive';
 
@@ -108,9 +108,11 @@ export class ConverterComponent implements OnInit, OnDestroy {
   }
 
   loadCurrencies(): void {
+    console.log('ConverterComponent: loadCurrencies called');
     this.loading = true;
     this.currencyService.getCurrencies().subscribe({
-      next: (response: any) => {
+      next: (response: CurrenciesResponse) => {
+        console.log('ConverterComponent: loadCurrencies success', response);
         this.currencies = Object.entries(response.data).map(([_, value]: any) => ({
           code: value.code,
           name: value.name,
@@ -123,7 +125,8 @@ export class ConverterComponent implements OnInit, OnDestroy {
 
         this.convertCurrency();
       },
-      error: (err) => {
+      error: (err: any) => {
+        console.error('ConverterComponent: loadCurrencies error', err);
         this.loading = false;
         this.error = 'Failed to load currencies';
         this.showError('Failed to load currencies');
@@ -184,18 +187,16 @@ export class ConverterComponent implements OnInit, OnDestroy {
       ? this.datePipe.transform(this.selectedDate, 'yyyy-MM-dd') || ''
       : undefined;
 
-    this.currencyService.convertCurrency(
-      this.fromCurrency.code,
-      this.toCurrency.code,
-      this.amount,
-      dateStr
-    ).subscribe({
-      next: (response: any) => {
+    console.log('ConverterComponent: convertCurrency called with', { from: this.fromCurrency!.code, to: this.toCurrency!.code, amount: this.amount, date: dateStr });
+    this.currencyService.convertCurrency(this.fromCurrency!.code, this.toCurrency!.code, this.amount, dateStr).subscribe({
+      next: (response: ConvertResponse) => {
+        console.log('ConverterComponent: convertCurrency success', response);
         this.convertedAmount = response.result;
         this.exchangeRate = response.result / this.amount;
         this.loading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
+        console.error('ConverterComponent: convertCurrency error', err);
         this.loading = false;
         this.error = 'Conversion failed';
         this.showError('Conversion failed');

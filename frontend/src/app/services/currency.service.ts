@@ -1,50 +1,23 @@
-import { Injectable, isDevMode } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
-import { CurrencyResponse, CurrenciesResponse, ConvertResponse } from '../models/currency.model';
+import { Currency, CurrenciesResponse, ConvertResponse } from '../models/currency.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CurrencyService {
-  private baseUrl: string;
+  private baseUrl = 'http://localhost:3002';
 
-  constructor(private http: HttpClient) {
-    this.baseUrl = isDevMode() ? 'http://localhost:3001' : '/.netlify/functions/api';
-  }
-
-  getLatestRates(base: string, currencies?: string[]): Observable<CurrencyResponse> {
-    let params = new HttpParams().set('base', base);
-    if (currencies && currencies.length > 0) {
-      params = params.set('currencies', currencies.join(','));
-    }
-    
-    return this.http.get<CurrencyResponse>(`${this.baseUrl}/currency/latest`, { params }).pipe(
-      retry(2),
-      catchError(this.handleError)
-    );
-  }
-
-  getHistoricalRates(date: string, base: string, currencies?: string[]): Observable<CurrencyResponse> {
-    let params = new HttpParams().set('date', date).set('base', base);
-    if (currencies && currencies.length > 0) {
-      params = params.set('currencies', currencies.join(','));
-    }
-    
-    return this.http.get<CurrencyResponse>(`${this.baseUrl}/currency/historical`, { params }).pipe(
-      retry(2),
-      catchError(this.handleError)
-    );
-  }
+  constructor(private http: HttpClient) {}
 
   getCurrencies(currencies?: string[]): Observable<CurrenciesResponse> {
     let params = new HttpParams();
     if (currencies && currencies.length > 0) {
       params = params.set('currencies', currencies.join(','));
     }
-    
-    return this.http.get<CurrenciesResponse>(`${this.baseUrl}/currency/currencies`, { params }).pipe(
+    return this.http.get<CurrenciesResponse>(`${this.baseUrl}/currencies`, { params }).pipe(
       retry(2),
       catchError(this.handleError)
     );
@@ -55,19 +28,12 @@ export class CurrencyService {
       .set('from', from)
       .set('to', to)
       .set('amount', amount.toString());
-    
+
     if (date) {
       params = params.set('date', date);
     }
 
-    return this.http.get<ConvertResponse>(`${this.baseUrl}/currency/convert`, { params }).pipe(
-      retry(2),
-      catchError(this.handleError)
-    );
-  }
-
-  getStatus(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/currency/status`).pipe(
+    return this.http.get<ConvertResponse>(`${this.baseUrl}/convert`, { params }).pipe(
       retry(2),
       catchError(this.handleError)
     );
@@ -75,7 +41,7 @@ export class CurrencyService {
 
   private handleError(error: HttpErrorResponse) {
     let errorMessage = 'An unknown error occurred!';
-    
+
     if (error.error instanceof ErrorEvent) {
       // Client-side error
       errorMessage = `Error: ${error.error.message}`;
@@ -83,7 +49,7 @@ export class CurrencyService {
       // Server-side error
       switch (error.status) {
         case 0:
-          errorMessage = 'Cannot connect to backend server. Is NestJS running on port 3000?';
+          errorMessage = 'Cannot connect to backend server. Is NestJS running on port 3002?';
           break;
         case 400:
           errorMessage = 'Invalid request: ' + (error.error?.message || 'Check your input');
@@ -101,7 +67,7 @@ export class CurrencyService {
           errorMessage = `Error ${error.status}: ${error.message}`;
       }
     }
-    
+
     console.error('CurrencyService Error:', errorMessage, error);
     return throwError(() => new Error(errorMessage));
   }
