@@ -11,7 +11,7 @@ export class CurrencyService {
   private baseUrl: string;
 
   constructor(private http: HttpClient) {
-    this.baseUrl = isDevMode() ? 'http://localhost:3000' : '/.netlify/functions/api';
+    this.baseUrl = isDevMode() ? 'http://localhost:3001' : '/.netlify/functions/api';
   }
 
   getLatestRates(base: string, currencies?: string[]): Observable<CurrencyResponse> {
@@ -20,7 +20,7 @@ export class CurrencyService {
       params = params.set('currencies', currencies.join(','));
     }
     
-    return this.http.get<CurrencyResponse>(`${this.baseUrl}/latest`, { params }).pipe(
+    return this.http.get<CurrencyResponse>(`${this.baseUrl}/currency/latest`, { params }).pipe(
       retry(2),
       catchError(this.handleError)
     );
@@ -32,7 +32,7 @@ export class CurrencyService {
       params = params.set('currencies', currencies.join(','));
     }
     
-    return this.http.get<CurrencyResponse>(`${this.baseUrl}/historical`, { params }).pipe(
+    return this.http.get<CurrencyResponse>(`${this.baseUrl}/currency/historical`, { params }).pipe(
       retry(2),
       catchError(this.handleError)
     );
@@ -44,7 +44,7 @@ export class CurrencyService {
       params = params.set('currencies', currencies.join(','));
     }
     
-    return this.http.get<CurrenciesResponse>(`${this.baseUrl}/currencies`, { params }).pipe(
+    return this.http.get<CurrenciesResponse>(`${this.baseUrl}/currency/currencies`, { params }).pipe(
       retry(2),
       catchError(this.handleError)
     );
@@ -60,14 +60,14 @@ export class CurrencyService {
       params = params.set('date', date);
     }
 
-    return this.http.get<ConvertResponse>(`${this.baseUrl}/convert`, { params }).pipe(
+    return this.http.get<ConvertResponse>(`${this.baseUrl}/currency/convert`, { params }).pipe(
       retry(2),
       catchError(this.handleError)
     );
   }
 
   getStatus(): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/status`).pipe(
+    return this.http.get<any>(`${this.baseUrl}/currency/status`).pipe(
       retry(2),
       catchError(this.handleError)
     );
