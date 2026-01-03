@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, retry } from 'rxjs/operators';
@@ -8,10 +8,11 @@ import { CurrencyResponse, CurrenciesResponse, ConvertResponse } from '../models
   providedIn: 'root'
 })
 export class CurrencyService {
-  // UPDATE: Change from 3001 to 3000
-  private baseUrl = 'http://localhost:3000/currency';
+  private baseUrl: string;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    this.baseUrl = isDevMode() ? 'http://localhost:3000' : '/.netlify/functions/api';
+  }
 
   getLatestRates(base: string, currencies?: string[]): Observable<CurrencyResponse> {
     let params = new HttpParams().set('base', base);

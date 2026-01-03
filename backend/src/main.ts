@@ -1,18 +1,26 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import serverlessExpress from '@vendia/serverless-express';
+
+let cachedServer;
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  if (!cachedServer) {
+    const app = await NestFactory.create(AppModule);
 
-  app.enableCors({
-    origin: ['http://localhost:4200', 'http://localhost:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  });
-  
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+    app.enableCors({
+      origin: ['http://localhost:4200', 'http://localhost:3000'],
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    });
+
+    cachedServer = serverlessExpress({ app: app.getHttpAdapter().getInstance() });
+  }
+  return cachedServer;
 }
-bootstrap();
+
+export const handler = async (event, context) => {
+  const server = await bootstrap();
+  return server(event, context);
+};
